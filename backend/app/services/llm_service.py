@@ -6,22 +6,65 @@ from app.core.config import settings
 
 class LLMService:
     def __init__(self):
-        self.base_url = settings.LLM_BASE_URL.rstrip("/")
-        self.api_key = settings.LLM_API_KEY
+        # OpenRouter
+        self.openrouter_base_url = settings.LLM_BASE_URL.rstrip("/")
+        self.openrouter_api_key = settings.LLM_API_KEY
+
+        # Gemini
         self.gemini_api_key = settings.GEMINI_API_KEY
 
-    async def generate(self, prompt: str, model: str):
-        is_gemini = model.lower().startswith("gemini")
+        # Groq
+        self.groq_base_url = settings.GROQ_BASE_URL.rstrip("/")
+        self.groq_api_key = settings.GROQ_API_KEY
 
-        if is_gemini:
+    async def generate(self, prompt: str, model: str):
+        model_lower = model.lower()
+
+        # Gemini models
+        if model_lower.startswith("gemini"):
             return await self._generate_gemini(prompt, model)
 
+        # Groq models
+        if model_lower.startswith("openai/") or model_lower.startswith("qwen/"):
+            return await self._generate_groq(prompt, model)
+
+        # Default: OpenRouter
         return await self._generate_openrouter(prompt, model)
 
     async def _generate_openrouter(self, prompt: str, model: str):
-        if not self.api_key:
+        return await self._generate_openai_compatible(
+            prompt=prompt,
+            model=model,
+            base_url=self.openrouter_base_url,
+            api_key=self.openrouter_api_key,
+            provider_name="OpenRouter"
+        )
+
+    async def _generate_groq(self, prompt: str, model: str):
+        if not self.groq_api_key:
             raise RuntimeError(
-                "LLM API key is missing. Configure LLM_API_KEY."
+                "Groq API key is missing. Configure GROQ_API_KEY."
+            )
+
+        return await self._generate_openai_compatible(
+            prompt=prompt,
+            model=model,
+            base_url=self.groq_base_url,
+            api_key=self.groq_api_key,
+            provider_name="Groq"
+        )
+
+    async def _generate_openai_compatible(
+        self,
+        prompt: str,
+        model: str,
+        base_url: str,
+        api_key: str,
+        provider_name: str
+    ):
+        if not api_key:
+            raise RuntimeError(
+                f"{provider_name} API key is missing."
             )
 
         payload = {
@@ -36,14 +79,14 @@ class LLMService:
         }
 
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
 
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(
-                    f"{self.base_url}/chat/completions",
+                    f"{base_url}/chat/completions",
                     json=payload,
                     headers=headers
                 )
@@ -55,11 +98,13 @@ class LLMService:
 
                 if not choices:
                     raise RuntimeError(
-                        "The LLM provider returned an empty response."
+                        f"{provider_name} returned an empty response."
                     )
 
                 generated_text = (
-                    choices[0].get("message", {}).get("content", "")
+                    choices[0]
+                    .get("message", {})
+                    .get("content", "")
                 )
 
                 if not generated_text:
@@ -79,16 +124,16 @@ class LLMService:
 
         except httpx.ConnectError:
             raise RuntimeError(
-                "Could not connect to the LLM provider."
+                f"Could not connect to {provider_name}."
             )
 
         except httpx.TimeoutException:
             raise RuntimeError(
-                "The LLM request timed out. Try again."
+                f"{provider_name} request timed out. Try again."
             )
 
         except httpx.HTTPStatusError as exc:
-            self._handle_http_error(exc)
+            self._handle_http_error(exc, provider_name)
 
     async def _generate_gemini(self, prompt: str, model: str):
         if not self.gemini_api_key:
@@ -198,7 +243,7 @@ class LLMService:
                     f"Gemini invalid request: {exc.response.text[:500]}"
                 )
 
-            if status == 401 or status == 403:
+            if status in (401, 403):
                 raise RuntimeError(
                     "Invalid Gemini API key or API access denied."
                 )
@@ -214,12 +259,12 @@ class LLMService:
                 f"Gemini API error ({status}): {error_text}"
             )
 
-    def _handle_http_error(self, exc):
+    def _handle_http_error(self, exc, provider_name="LLM provider"):
         status = exc.response.status_code
 
         if status == 401:
             raise RuntimeError(
-                "Invalid LLM API key. Check your environment variables."
+                f"Invalid {provider_name} API key."
             )
 
         if status == 402:
@@ -227,15 +272,26 @@ class LLMService:
                 "Insufficient API credits or payment required."
             )
 
+        if status == 403:
+            raise RuntimeError(
+                f"{provider_name} access denied."
+            )
+
+        if status == 404:
+            raise RuntimeError(
+                f"Model not found on {provider_name}. "
+                "Check the model ID."
+            )
+
         if status == 429:
             raise RuntimeError(
-                "LLM rate limit reached. Please try again later."
+                f"{provider_name} rate limit or quota reached."
             )
 
         error_text = exc.response.text[:500]
 
         raise RuntimeError(
-            f"LLM provider error ({status}): {error_text}"
+            f"{provider_name} error ({status}): {error_text}"
         )
 
 

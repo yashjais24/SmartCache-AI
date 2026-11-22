@@ -41,7 +41,7 @@ class ModelRouter:
         complexity = self.classify_query(query)
 
         if complexity == "complex":
-            return settings.LLM_LARGE_MODEL
+            return settings.GROQ_LARGE_MODEL
 
         return settings.LLM_SMALL_MODEL
 

@@ -8,7 +8,9 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "openrouter"
     LLM_API_KEY: str = ""
     LLM_BASE_URL: str = "https://openrouter.ai/api/v1"
-
+    GROQ_API_KEY: str = ""
+    GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
+    GROQ_LARGE_MODEL: str = "openai/gpt-oss-120b"
     LLM_SMALL_MODEL: str = ""
     LLM_LARGE_MODEL: str = ""
 
