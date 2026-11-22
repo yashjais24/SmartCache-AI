@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 const API = axios.create({
-  baseURL: "http://localhost:8000/api",
-  timeout: 180000
+  baseURL: `${BASE_URL}/api`,
+  timeout: 180000,
 });
 
 export const sendMessage = async (query) => {
@@ -51,7 +53,7 @@ export const clearCache = async () => {
 };
 
 export const checkHealth = async () => {
-  const response = await API.get("/health");
+  const response = await axios.get(`${BASE_URL}/health`);
   return response.data;
 };
 
