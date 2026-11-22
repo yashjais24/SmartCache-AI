@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Environment secrets
+.env
+.env.local
+
+# FAISS generated data
+data/faiss_index/*
+!data/faiss_index/.gitkeep
+faiss_index/
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

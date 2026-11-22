@@ -1,0 +1,46 @@
+
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Patrick+Hand&family=Caveat:wght@500;600;700&display=swap");
+
+@import "tailwindcss";
+
+:root {
+  font-family: "Nunito", sans-serif;
+  color: #292722;
+  background: #fffdf7;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  width: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+  background: #fffdf7;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: #e6ddff;
+  color: #292722;
+}

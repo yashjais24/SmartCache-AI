@@ -1,0 +1,1 @@
+# SmartCache AI — app package
