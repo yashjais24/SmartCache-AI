@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     LLM_SMALL_MODEL: str = ""
     LLM_LARGE_MODEL: str = ""
 
+    CLOUDFLARE_ACCOUNT_ID: str = ""
+    CLOUDFLARE_API_TOKEN: str = ""
+
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 
     CACHE_THRESHOLD: float = 0.82
