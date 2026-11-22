@@ -117,12 +117,15 @@ function Settings() {
   };
 
   const cacheEntries = getValue(cacheStats, [
-    "total_entries",
-    "cache_size",
-    "total_cached",
-    "size",
-    "count",
-  ]);
+  "cached_entries",
+  "total_entries",
+  "cache_size",
+  "total_cached",
+  "total_cached_items",
+  "cache_count",
+  "size",
+  "count",
+]);
 
   return (
     <div className="space-y-7">
@@ -289,12 +292,13 @@ function Settings() {
             </div>
 
             <p className="mt-2 break-all text-sm font-bold">
-              inclusionai/ling-3.2-flash:free
+            Groq · GPT-OSS 120B
             </p>
 
-            <p className="mt-2 text-xs leading-5 text-gray-600">
-              More capable model selected for complex queries.
-            </p>
+<p className="mt-2 text-xs leading-5 text-gray-600">
+  High-performance model for complex reasoning, coding,
+  and advanced queries.
+</p>
           </div>
         </div>
       </div>
